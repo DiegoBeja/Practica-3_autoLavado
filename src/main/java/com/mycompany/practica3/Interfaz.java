@@ -25,7 +25,7 @@ public class Interfaz extends javax.swing.JFrame {
         hilo.start();
         actualizarAcceso();
         
-        Timer timer = new Timer(100, e -> actualizarAcceso());
+        Timer timer = new Timer(200, e -> actualizarAcceso());
         timer.start();
     }
     

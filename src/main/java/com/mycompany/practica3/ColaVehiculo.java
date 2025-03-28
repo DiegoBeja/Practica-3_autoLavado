@@ -70,7 +70,11 @@ public class ColaVehiculo {
     }
     
     public int getSize(){
-        return prioridad ? prioridadVehiculos.size() : vehiculos.length;
+        if (prioridad){
+            return prioridadVehiculos.size();
+        } else{
+            return colaVacia() ? 0 : (fin - inicio + 1);
+        }
     }
     
     public void mostrarCola(){

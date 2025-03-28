@@ -85,23 +85,24 @@ public class AutoLavado implements Runnable{
                                     lineaSecadoExpress.agregarVehiculo(vehiculoLavado);
                                     Thread.sleep(5000);
                                     if(!lineaSecadoExpress.colaVacia()){
-                                        Vehiculo vehiculoTerminado = lineaSecadoExpress.eliminarVehiculo();
-                                        System.out.println("Listo: " + vehiculoTerminado.toString());
+                                        Vehiculo vehiculoTerminado1 = lineaSecadoExpress.eliminarVehiculo();
+                                        System.out.println("Listo: " + vehiculoTerminado1.toString());
                                     }
                                 } else{
-                                    mejorColaSecado().agregarVehiculo(vehiculoLavado);
+                                    ColaVehiculo mejorColaSecadoCarro = mejorColaSecado();
+                                    mejorColaSecadoCarro.agregarVehiculo(vehiculoLavado);
                                     if(vehiculoLavado.getTamano().equals("Pequeno")){
                                         Thread.sleep(5000);
-                                        Vehiculo vehiculoTerminado = mejorColaSecado().eliminarVehiculo();
-                                        System.out.println("Listo: " + vehiculoTerminado.toString());
+                                        Vehiculo vehiculoTerminado2 = mejorColaSecadoCarro.eliminarVehiculo();
+                                        System.out.println("Listo: " + vehiculoTerminado2.toString());
                                     } else if(vehiculoLavado.getTamano().equals("Mediano")){
                                         Thread.sleep(7000);
-                                        Vehiculo vehiculoTerminado = mejorColaSecado().eliminarVehiculo();
-                                        System.out.println("Listo: " + vehiculoTerminado.toString());
+                                        Vehiculo vehiculoTerminado3 = mejorColaSecadoCarro.eliminarVehiculo();
+                                        System.out.println("Listo: " + vehiculoTerminado3.toString());
                                     } else{
                                         Thread.sleep(10000);
-                                        Vehiculo vehiculoTerminado = mejorColaSecado().eliminarVehiculo();
-                                        System.out.println("Listo: " + vehiculoTerminado.toString());
+                                        Vehiculo vehiculoTerminado4 = mejorColaSecadoCarro.eliminarVehiculo();
+                                        System.out.println("Listo: " + vehiculoTerminado4.toString());
                                     }
                                 }
                             }
