@@ -10,7 +10,7 @@ public class AutoLavado implements Runnable{
     private ColaVehiculo lineaAspirado3;
     private ColaVehiculo lineaAspirado4; 
     private ColaVehiculo lineaSecadoExpress;
-    private int horas;
+    private volatile float horas;
     
     public AutoLavado(){
         acceso = new ColaVehiculo(10, true);
@@ -27,53 +27,53 @@ public class AutoLavado implements Runnable{
     public void run(){
         Random rand = new Random();
         
-//        if(horas >= 2){
-//            System.out.println("Se acabo el tiempo");
-//            return;
-//        }
-        
-        while(horas < 2){
-        
-            int tiempoNuevoVehiculo = rand.nextInt(8000 - 2000 + 1) + 2000;
-            //Thread autoLavadoHilo = new Thread(() -> {
-
-                Thread llegadaVehiculosHilo = new Thread(() -> {  
-                    try{
-                        while(!acceso.colaLlena()){
+            Thread llegadaVehiculosHilo = new Thread(() -> {  
+                try{
+                    while(horas < 1.75){
+                        if(!acceso.colaLlena()){
+                            int tiempoNuevoVehiculo = rand.nextInt(8000 - 2000 + 1) + 2000;
                             Thread.sleep(tiempoNuevoVehiculo);
+                            if(horas >= 1.75){ 
+                                System.out.println("Cerrado");
+                                break;
+                            }
                             Vehiculo vehiculoNuevo = vehiculoRandom();
                             acceso.agregarVehiculo(vehiculoNuevo);
                             System.out.println("Vehiculo Nuevo:" + vehiculoNuevo.toString());
                         }
-                    } catch(InterruptedException e){
-                        e.printStackTrace();
                     }
-                });
+                } catch(InterruptedException e){
+                    e.printStackTrace();
+                }
+            });
 
-                Thread lavadoHilo = new Thread(() -> {
-                    try{
-                        //if(!acceso.colaVacia() ){
-                            while(!maquinaLavado.colaLlena() && !acceso.colaVacia()){
-                                Vehiculo vehiculoAEliminar = acceso.eliminarVehiculo();
-                                if(vehiculoAEliminar != null){
-                                    maquinaLavado.agregarVehiculo(vehiculoAEliminar);
-                                    System.out.println("Se ha agregado:" + maquinaLavado.peek());
-                                    Thread.sleep(3000);
-                                }
+            Thread lavadoHilo = new Thread(() -> {
+                try{
+                    while(true){
+                        if(!maquinaLavado.colaLlena() && !acceso.colaVacia()){
+                            Vehiculo vehiculoAEliminar = acceso.eliminarVehiculo();
+                            if(vehiculoAEliminar != null){
+                                maquinaLavado.agregarVehiculo(vehiculoAEliminar);
+                                System.out.println("Se ha agregado:" + vehiculoAEliminar.toString());
+                                Thread.sleep(3000);
                             }
-                        //}
-                    } catch(InterruptedException e){
-                        e.printStackTrace();
+                        } else{
+                            Thread.sleep(500);
+                        }
                     }
-                });
+                } catch(InterruptedException e){
+                    e.printStackTrace();
+                }
+            });
 
-                Thread secadoHilo = new Thread(() -> {
-                    try{
-                        while(!mejorColaSecado().colaLlena() && !lineaSecadoExpress.colaLlena()){
-
+            Thread secadoHilo = new Thread(() -> {
+                try{
+                    while(true){
+                        if(!mejorColaSecado().colaLlena() && !lineaSecadoExpress.colaLlena()){
+                            //System.out.println("Mejor cola actual:" + mejorColaSecado().toString());
+                            Thread.sleep(10);
                             if(!maquinaLavado.colaVacia()){
                                 Vehiculo vehiculoLavado = maquinaLavado.eliminarVehiculo();
-
 
                                 if (vehiculoLavado == null) { 
                                     System.out.println("No hay vehiculos en la maquina de lavado");
@@ -105,25 +105,37 @@ public class AutoLavado implements Runnable{
                                     }
                                 }
                             }
+                        } else{
+                            Thread.sleep(1000);
                         }
-                    } catch(InterruptedException e){
-                        e.printStackTrace();
                     }
-                });
-
-                llegadaVehiculosHilo.start();
-                lavadoHilo.start();
-                secadoHilo.start();
-
-                try{
-                    Thread.sleep(60000);
-                    horas++;
-                } catch(InterruptedException e) {
+                } catch(InterruptedException e){
                     e.printStackTrace();
                 }
-            }
-        //});  
-        //autoLavadoHilo.start();
+            });
+        
+        Thread autoLavadoHilo = new Thread(() -> {
+            try{
+                while(horas < 2){
+                    Thread.sleep(15000);
+                    horas += 15.0/60;
+                    System.out.println("Horas transcurridas:" + horas);
+                }
+                
+                llegadaVehiculosHilo.interrupt();
+                lavadoHilo.interrupt();
+                secadoHilo.interrupt();
+                
+            } catch(InterruptedException e) {
+                e.printStackTrace();
+            }  
+        });
+        
+        llegadaVehiculosHilo.start();
+        lavadoHilo.start();
+        secadoHilo.start();
+        
+        autoLavadoHilo.start();
     }
     
     public Vehiculo vehiculoRandom(){
@@ -166,4 +178,20 @@ public class AutoLavado implements Runnable{
         
         return mejorCola;
     } 
+    
+    public ColaVehiculo getAcceso(){
+        return acceso;
+    }
+    
+    public ColaVehiculo getMaquinaLavado(){
+        return maquinaLavado;
+    }
+    
+    public ColaVehiculo getLineaSecadoExpress(){
+        return lineaSecadoExpress;
+    } 
+    
+    public float getHoras(){
+        return horas;
+    }
 }
