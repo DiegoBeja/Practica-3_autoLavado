@@ -1,22 +1,23 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package com.mycompany.practica3;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-/**
- *
- * @author bombo
- */
 public class Interfaz extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Interfaz
-     */
     public Interfaz() {
         initComponents();
         
@@ -25,12 +26,48 @@ public class Interfaz extends javax.swing.JFrame {
         hilo.start();
         actualizarAcceso();
         
-        Timer timer = new Timer(200, e -> actualizarAcceso());
+        Timer timer = new Timer(150, e -> actualizarAcceso());
         timer.start();
+        
+        horaContador = 8;
+        minutos = 0;
+        
+        reloj();
+        registroCarros = new StringBuilder();
     }
+    
+    public void reloj(){  
+        relojTimer = new Timer(1000, e -> {
+            if (horaContador < 10) {
+                minutos++;
+                if (minutos == 60) {
+                    minutos = 0;
+                    horaContador++;
+                }
+                actualizarAcceso();
+            } else {
+                relojTimer.stop(); 
+                System.out.println(x.getRegistro());
+            }
+        });
+        relojTimer.start();
+    }
+    
+    
     
     public void actualizarAcceso() {
          SwingUtilities.invokeLater(() -> {
+            if(x.getHoras() >= 1.75){
+                horasRestantes.setVisible(true);
+            } else{
+                horasRestantes.setVisible(false);
+            }
+            
+            String tiempo = String.format("%02d:%02d", horaContador, minutos);
+            if (!hora.getText().equals(tiempo)) {
+                hora.setText(tiempo);
+            }
+            
             acceso0.setBackground(Color.WHITE);
             acceso1.setBackground(Color.WHITE);
             acceso2.setBackground(Color.WHITE);
@@ -42,37 +79,212 @@ public class Interfaz extends javax.swing.JFrame {
             acceso8.setBackground(Color.WHITE);
             acceso9.setBackground(Color.WHITE);
             
+            acceso0.setText("");
+            acceso1.setText("");
+            acceso2.setText("");
+            acceso3.setText("");
+            acceso4.setText("");
+            acceso5.setText("");
+            acceso6.setText("");
+            acceso7.setText("");
+            acceso8.setText("");
+            acceso9.setText("");
             
-            int size = x.getAcceso().getSize(); // Obtener el tamaño de la cola
+            int size = x.getAcceso().getSize(); 
             int sizeLavado = x.getMaquinaLavado().getSize();
-            int sizeSecado = x.mejorColaSecado().getSize();
+            int sizeSecado1 = x.getLineaAspirado1().getSize();
+            int sizeSecado2 = x.getLineaAspirado2().getSize();
+            int sizeSecado3 = x.getLineaAspirado3().getSize();
+            int sizeSecado4 = x.getLineaAspirado4().getSize();
             int sizeExpress = x.getLineaSecadoExpress().getSize();
         
-            for (int i = 0; i < size; i++) {
-                switch (i) {
-                    case 0: acceso0.setBackground(Color.GREEN); break;
-                    case 1: acceso1.setBackground(Color.GREEN); break;
-                    case 2: acceso2.setBackground(Color.GREEN); break;
-                    case 3: acceso3.setBackground(Color.GREEN); break;
-                    case 4: acceso4.setBackground(Color.GREEN); break;
-                    case 5: acceso5.setBackground(Color.GREEN); break;
-                    case 6: acceso6.setBackground(Color.GREEN); break;
-                    case 7: acceso7.setBackground(Color.GREEN); break;
-                    case 8: acceso8.setBackground(Color.GREEN); break;
-                    case 9: acceso9.setBackground(Color.GREEN); break;
+            for(int i = 0; i < size; i++){
+                switch(i){
+                    case 0: acceso0.setBackground(Color.GREEN); acceso0.setText(x.getAcceso().getVehiculo(0).getMarca()); break;
+                    case 1: acceso1.setBackground(Color.GREEN); acceso1.setText(x.getAcceso().getVehiculo(1).getMarca()); break;
+                    case 2: acceso2.setBackground(Color.GREEN); acceso2.setText(x.getAcceso().getVehiculo(2).getMarca()); break;
+                    case 3: acceso3.setBackground(Color.GREEN); acceso3.setText(x.getAcceso().getVehiculo(3).getMarca()); break;
+                    case 4: acceso4.setBackground(Color.GREEN); acceso4.setText(x.getAcceso().getVehiculo(4).getMarca()); break;
+                    case 5: acceso5.setBackground(Color.GREEN); acceso5.setText(x.getAcceso().getVehiculo(5).getMarca()); break;
+                    case 6: acceso6.setBackground(Color.GREEN); acceso6.setText(x.getAcceso().getVehiculo(6).getMarca()); break;
+                    case 7: acceso7.setBackground(Color.GREEN); acceso7.setText(x.getAcceso().getVehiculo(7).getMarca()); break;
+                    case 8: acceso8.setBackground(Color.GREEN); acceso8.setText(x.getAcceso().getVehiculo(8).getMarca()); break;
+                    case 9: acceso9.setBackground(Color.GREEN); acceso9.setText(x.getAcceso().getVehiculo(9).getMarca()); break;
                 }
             }
             
             lavado0.setBackground(Color.WHITE);
             lavado1.setBackground(Color.WHITE);
             lavado2.setBackground(Color.WHITE);
-            for (int j = 0; j < sizeLavado; j++) {
+            
+            lavado0.setText("");
+            lavado1.setText("");
+            lavado2.setText("");
+            for(int j = 0; j < sizeLavado; j++){
                 switch (j) {
-                    case 0: lavado0.setBackground(Color.GREEN); break;
-                    case 1: lavado1.setBackground(Color.GREEN); break;
-                    case 2: lavado2.setBackground(Color.GREEN); break;
+                    case 0: lavado0.setBackground(Color.GREEN); lavado0.setText(x.getMaquinaLavado().getVehiculo(0).getMarca()); break;
+                    case 1: lavado1.setBackground(Color.GREEN); lavado1.setText(x.getMaquinaLavado().getVehiculo(1).getMarca()); break;
+                    case 2: lavado2.setBackground(Color.GREEN); lavado2.setText(x.getMaquinaLavado().getVehiculo(2).getMarca()); break;
                 }
             }
+            
+            secado10.setBackground(Color.WHITE);
+            secado11.setBackground(Color.WHITE);
+            secado12.setBackground(Color.WHITE);
+            secado13.setBackground(Color.WHITE);
+            
+            secado10.setText("");
+            secado11.setText("");
+            secado12.setText("");
+            secado13.setText("");
+            for(int j = 0; j < sizeSecado1; j++){
+                switch(j){
+                    case 0: 
+                        secado10.setBackground(Color.GREEN); 
+                        secado10.setText(x.getLineaAspirado1().getVehiculo(0).getMarca());  
+                        break;
+                    case 1: 
+                        secado11.setBackground(Color.GREEN); 
+                        secado11.setText(x.getLineaAspirado1().getVehiculo(1).getMarca()); 
+                        break;
+                    case 2: 
+                        secado12.setBackground(Color.GREEN); 
+                        secado12.setText(x.getLineaAspirado1().getVehiculo(2).getMarca());
+                        break;
+                    case 3: 
+                        secado13.setBackground(Color.GREEN); 
+                        secado13.setText(x.getLineaAspirado1().getVehiculo(3).getMarca()); 
+                        break;
+                }
+            }
+            
+            secado20.setBackground(Color.WHITE);
+            secado21.setBackground(Color.WHITE);
+            secado22.setBackground(Color.WHITE);
+            secado23.setBackground(Color.WHITE);
+            
+            secado20.setText("");
+            secado21.setText("");
+            secado22.setText("");
+            secado23.setText("");
+            for(int j = 0; j < sizeSecado2; j++){
+                switch(j){
+                    case 0: 
+                        secado20.setBackground(Color.GREEN); 
+                        secado20.setText(x.getLineaAspirado2().getVehiculo(0).getMarca()); 
+                        break;
+                    case 1: 
+                        secado21.setBackground(Color.GREEN); 
+                        secado21.setText(x.getLineaAspirado2().getVehiculo(1).getMarca());
+                        break;
+                    case 2: 
+                        secado22.setBackground(Color.GREEN); 
+                        secado22.setText(x.getLineaAspirado2().getVehiculo(2).getMarca());
+                        break;
+                    case 3: 
+                        secado23.setBackground(Color.GREEN); 
+                        secado23.setText(x.getLineaAspirado2().getVehiculo(3).getMarca());
+                        break;
+                }
+            }
+
+            secado30.setBackground(Color.WHITE);
+            secado31.setBackground(Color.WHITE);
+            secado32.setBackground(Color.WHITE);
+            secado33.setBackground(Color.WHITE);
+            
+            secado30.setText("");
+            secado31.setText("");
+            secado32.setText("");
+            secado33.setText("");
+            for(int j = 0; j < sizeSecado3; j++){
+                switch(j){
+                    case 0: 
+                        secado30.setBackground(Color.GREEN); 
+                        secado30.setText(x.getLineaAspirado3().getVehiculo(0).getMarca()); 
+                        break;
+                    case 1: 
+                        secado31.setBackground(Color.GREEN); 
+                        secado31.setText(x.getLineaAspirado3().getVehiculo(1).getMarca()); 
+                        break;
+                    case 2: 
+                        secado32.setBackground(Color.GREEN); 
+                        secado32.setText(x.getLineaAspirado3().getVehiculo(2).getMarca());
+                        break;
+                    case 3: 
+                        secado33.setBackground(Color.GREEN); 
+                        secado33.setText(x.getLineaAspirado3().getVehiculo(3).getMarca());
+                        break;
+                }
+            }
+            
+            secado40.setBackground(Color.WHITE);
+            secado41.setBackground(Color.WHITE);
+            secado42.setBackground(Color.WHITE);
+            secado43.setBackground(Color.WHITE);
+            
+            secado40.setText("");
+            secado41.setText("");
+            secado42.setText("");
+            secado43.setText("");
+            for(int j = 0; j < sizeSecado4; j++){
+                switch(j){
+                    case 0: 
+                        secado40.setBackground(Color.GREEN); 
+                        secado40.setText(x.getLineaAspirado4().getVehiculo(0).getMarca());
+                        break;
+                    case 1: 
+                        secado41.setBackground(Color.GREEN); 
+                        secado41.setText(x.getLineaAspirado4().getVehiculo(1).getMarca()); 
+                        break;
+                    case 2: 
+                        secado42.setBackground(Color.GREEN); 
+                        secado42.setText(x.getLineaAspirado4().getVehiculo(2).getMarca()); 
+                        break;
+                    case 3: 
+                        secado43.setBackground(Color.GREEN); 
+                        secado43.setText(x.getLineaAspirado4().getVehiculo(3).getMarca());
+                        break;
+                }
+            }
+                
+            express0.setBackground(Color.WHITE);
+            express1.setBackground(Color.WHITE);
+            express2.setBackground(Color.WHITE);
+            express3.setBackground(Color.WHITE);
+            express4.setBackground(Color.WHITE);
+            
+            express0.setText("");
+            express1.setText("");
+            express2.setText("");
+            express3.setText("");
+            express4.setText("");
+            for(int j = 0; j < sizeExpress; j++){
+                switch(j){
+                    case 0: 
+                        express0.setBackground(Color.GREEN); 
+                        express0.setText(x.getLineaSecadoExpress().getVehiculo(0).getMarca()); 
+                        break;
+                    case 1: 
+                        express1.setBackground(Color.GREEN); 
+                        express1.setText(x.getLineaSecadoExpress().getVehiculo(1).getMarca());
+                        break;
+                    case 2: 
+                        express2.setBackground(Color.GREEN); 
+                        express2.setText(x.getLineaSecadoExpress().getVehiculo(2).getMarca()); 
+                        break;
+                    case 3: 
+                        express3.setBackground(Color.GREEN); 
+                        express3.setText(x.getLineaSecadoExpress().getVehiculo(3).getMarca());
+                        break;
+                    case 4: 
+                        express4.setBackground(Color.GREEN); 
+                        express4.setText(x.getLineaSecadoExpress().getVehiculo(4).getMarca()); 
+                        break;
+                }
+            }
+            
+            
         });
     }
     
@@ -87,9 +299,11 @@ public class Interfaz extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        jTextField1 = new javax.swing.JTextField();
+        hora = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        horasRestantes = new javax.swing.JLabel();
+        saltar = new javax.swing.JButton();
+        adelantar = new javax.swing.JButton();
         acceso0 = new javax.swing.JLabel();
         acceso1 = new javax.swing.JLabel();
         acceso2 = new javax.swing.JLabel();
@@ -139,18 +353,31 @@ public class Interfaz extends javax.swing.JFrame {
         jPanel2.setForeground(new java.awt.Color(153, 153, 153));
         jPanel2.setToolTipText("");
 
-        jTextField1.setText("8:00");
-        jTextField1.setEnabled(false);
-        jTextField1.setFocusable(false);
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        hora.setText("8:00");
+        hora.setFocusable(false);
+        hora.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                horaActionPerformed(evt);
             }
         });
 
         jLabel1.setText("Hora:");
 
-        jLabel2.setText("Faltan 15 min para cerrar");
+        horasRestantes.setText("Faltan 15 min para cerrar");
+
+        saltar.setText("Saltar");
+        saltar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saltarActionPerformed(evt);
+            }
+        });
+
+        adelantar.setText("Adelantar");
+        adelantar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                adelantarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -160,10 +387,14 @@ public class Interfaz extends javax.swing.JFrame {
                 .addGap(33, 33, 33)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(144, 144, 144)
-                .addComponent(jLabel2)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(hora, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(231, 231, 231)
+                .addComponent(horasRestantes)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(saltar)
+                .addGap(18, 18, 18)
+                .addComponent(adelantar)
+                .addGap(29, 29, 29))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -171,60 +402,52 @@ public class Interfaz extends javax.swing.JFrame {
                 .addGap(14, 14, 14)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
+                    .addComponent(hora, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(horasRestantes)
+                    .addComponent(saltar)
+                    .addComponent(adelantar))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         acceso0.setBackground(new java.awt.Color(255, 255, 255));
-        acceso0.setText("jLabel3");
         acceso0.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         acceso0.setOpaque(true);
 
         acceso1.setBackground(new java.awt.Color(255, 255, 255));
-        acceso1.setText("jLabel3");
         acceso1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         acceso1.setOpaque(true);
 
         acceso2.setBackground(new java.awt.Color(255, 255, 255));
-        acceso2.setText("jLabel3");
         acceso2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         acceso2.setOpaque(true);
 
         acceso3.setBackground(new java.awt.Color(255, 255, 255));
-        acceso3.setText("jLabel3");
         acceso3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         acceso3.setOpaque(true);
 
         ColaAcceso.setText("Cola Acceso");
 
         acceso4.setBackground(new java.awt.Color(255, 255, 255));
-        acceso4.setText("jLabel3");
         acceso4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         acceso4.setOpaque(true);
 
         acceso5.setBackground(new java.awt.Color(255, 255, 255));
-        acceso5.setText("jLabel3");
         acceso5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         acceso5.setOpaque(true);
 
         acceso6.setBackground(new java.awt.Color(255, 255, 255));
-        acceso6.setText("jLabel3");
         acceso6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         acceso6.setOpaque(true);
 
         acceso7.setBackground(new java.awt.Color(255, 255, 255));
-        acceso7.setText("jLabel3");
         acceso7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         acceso7.setOpaque(true);
 
         acceso8.setBackground(new java.awt.Color(255, 255, 255));
-        acceso8.setText("jLabel3");
         acceso8.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         acceso8.setOpaque(true);
 
         acceso9.setBackground(new java.awt.Color(255, 255, 255));
-        acceso9.setText("jLabel3");
         acceso9.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         acceso9.setOpaque(true);
 
@@ -556,9 +779,17 @@ public class Interfaz extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+    private void horaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_horaActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    }//GEN-LAST:event_horaActionPerformed
+
+    private void adelantarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_adelantarActionPerformed
+        x.setMilis((float) 0.3);
+    }//GEN-LAST:event_adelantarActionPerformed
+
+    private void saltarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saltarActionPerformed
+        x.setMilis((float) 0.001);
+    }//GEN-LAST:event_saltarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -607,15 +838,17 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JLabel acceso7;
     private javax.swing.JLabel acceso8;
     private javax.swing.JLabel acceso9;
+    private javax.swing.JButton adelantar;
     private javax.swing.JLabel express0;
     private javax.swing.JLabel express1;
     private javax.swing.JLabel express2;
     private javax.swing.JLabel express3;
     private javax.swing.JLabel express4;
+    private javax.swing.JTextField hora;
+    private javax.swing.JLabel horasRestantes;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel18;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel34;
@@ -623,10 +856,10 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JLabel lavado0;
     private javax.swing.JLabel lavado1;
     private javax.swing.JLabel lavado2;
+    private javax.swing.JButton saltar;
     private javax.swing.JLabel secado10;
     private javax.swing.JLabel secado11;
     private javax.swing.JLabel secado12;
@@ -645,5 +878,10 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JLabel secado43;
     // End of variables declaration//GEN-END:variables
     private AutoLavado x;
+    private int horaContador;
+    private int minutos;
+    private Timer relojTimer;
+    private StringBuilder registroCarros;
+    private JTextArea textArea;
 }
 

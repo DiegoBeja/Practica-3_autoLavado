@@ -105,4 +105,13 @@ public class ColaVehiculo {
             return vehiculos[inicio];
         }
     }
+    
+    public Vehiculo getVehiculo(int index){
+    if(prioridad){
+        List<Vehiculo> lista = new ArrayList<>(prioridadVehiculos);
+        return index < lista.size() ? lista.get(index) : null;
+    } else {
+        return index < (fin - inicio + 1) ? vehiculos[inicio + index] : null;
+    }
+}
 }

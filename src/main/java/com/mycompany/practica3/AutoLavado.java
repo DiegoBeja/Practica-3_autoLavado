@@ -11,6 +11,10 @@ public class AutoLavado implements Runnable{
     private ColaVehiculo lineaAspirado4; 
     private ColaVehiculo lineaSecadoExpress;
     private volatile float horas;
+    private float milis;
+    private StringBuilder registroVehiculos;
+    private float minutos;
+    private int horasR;
     
     public AutoLavado(){
         acceso = new ColaVehiculo(10, true);
@@ -20,7 +24,11 @@ public class AutoLavado implements Runnable{
         lineaAspirado3 = new ColaVehiculo(4, false);
         lineaAspirado4 = new ColaVehiculo(4, false);
         lineaSecadoExpress = new ColaVehiculo(5, false);
-        horas = 0;
+        horas = 8;
+        horasR = 0;
+        minutos = 0;
+        milis = 1;
+        registroVehiculos = new StringBuilder();
     }
     
     @Override
@@ -29,11 +37,16 @@ public class AutoLavado implements Runnable{
         
             Thread llegadaVehiculosHilo = new Thread(() -> {  
                 try{
-                    while(horas < 1.75){
+                    while(true){
+                        if (Thread.currentThread().isInterrupted()) {
+                            System.out.println("Hilo interrumpido");
+                            break;
+                        }
+                        
                         if(!acceso.colaLlena()){
                             int tiempoNuevoVehiculo = rand.nextInt(8000 - 2000 + 1) + 2000;
-                            Thread.sleep(tiempoNuevoVehiculo);
-                            if(horas >= 1.75){ 
+                            Thread.sleep((long) (tiempoNuevoVehiculo * milis));
+                            if(horas >= 9.75){ 
                                 System.out.println("Cerrado");
                                 break;
                             }
@@ -50,12 +63,27 @@ public class AutoLavado implements Runnable{
             Thread lavadoHilo = new Thread(() -> {
                 try{
                     while(true){
+                        if (Thread.currentThread().isInterrupted()) {
+                            System.out.println("Hilo interrumpido");
+                            break;
+                        }
+                        
+                        //No se quedan los carros en la cola de lavado los 3 segundos
                         if(!maquinaLavado.colaLlena() && !acceso.colaVacia()){
                             Vehiculo vehiculoAEliminar = acceso.eliminarVehiculo();
                             if(vehiculoAEliminar != null){
                                 maquinaLavado.agregarVehiculo(vehiculoAEliminar);
-                                System.out.println("Se ha agregado:" + vehiculoAEliminar.toString());
-                                Thread.sleep(3000);
+                                System.out.println("Lavando:" + vehiculoAEliminar.toString());
+                                Thread.sleep((long) (3000 * milis));
+                                Vehiculo vehiculoLavado = maquinaLavado.eliminarVehiculo();
+                                if(vehiculoLavado.getPreferente()){
+                                    lineaSecadoExpress.agregarVehiculo(vehiculoLavado);
+                                    System.out.println("Secado Express");
+                                } else{
+                                    ColaVehiculo mejorColaSecadoCarro = mejorColaSecado();
+                                    mejorColaSecadoCarro.agregarVehiculo(vehiculoLavado);
+                                    System.out.println("Vehiculo lavado");
+                                }
                             }
                         } else{
                             Thread.sleep(500);
@@ -69,45 +97,92 @@ public class AutoLavado implements Runnable{
             Thread secadoHilo = new Thread(() -> {
                 try{
                     while(true){
-                        if(!mejorColaSecado().colaLlena() && !lineaSecadoExpress.colaLlena()){
-                            //System.out.println("Mejor cola actual:" + mejorColaSecado().toString());
-                            Thread.sleep(10);
-                            if(!maquinaLavado.colaVacia()){
-                                Vehiculo vehiculoLavado = maquinaLavado.eliminarVehiculo();
-
-                                if (vehiculoLavado == null) { 
-                                    System.out.println("No hay vehiculos en la maquina de lavado");
-                                    Thread.sleep(1000); 
-                                    continue;
-                                }
-
-                                if(vehiculoLavado.getPreferente()){
-                                    lineaSecadoExpress.agregarVehiculo(vehiculoLavado);
-                                    Thread.sleep(5000);
-                                    if(!lineaSecadoExpress.colaVacia()){
-                                        Vehiculo vehiculoTerminado1 = lineaSecadoExpress.eliminarVehiculo();
-                                        System.out.println("Listo: " + vehiculoTerminado1.toString());
-                                    }
-                                } else{
-                                    ColaVehiculo mejorColaSecadoCarro = mejorColaSecado();
-                                    mejorColaSecadoCarro.agregarVehiculo(vehiculoLavado);
-                                    if(vehiculoLavado.getTamano().equals("Pequeno")){
-                                        Thread.sleep(5000);
-                                        Vehiculo vehiculoTerminado2 = mejorColaSecadoCarro.eliminarVehiculo();
-                                        System.out.println("Listo: " + vehiculoTerminado2.toString());
-                                    } else if(vehiculoLavado.getTamano().equals("Mediano")){
-                                        Thread.sleep(7000);
-                                        Vehiculo vehiculoTerminado3 = mejorColaSecadoCarro.eliminarVehiculo();
-                                        System.out.println("Listo: " + vehiculoTerminado3.toString());
-                                    } else{
-                                        Thread.sleep(10000);
-                                        Vehiculo vehiculoTerminado4 = mejorColaSecadoCarro.eliminarVehiculo();
-                                        System.out.println("Listo: " + vehiculoTerminado4.toString());
-                                    }
-                                }
+                        if(Thread.currentThread().isInterrupted()){
+                            System.out.println("Hilo interrumpido");
+                            break;
+                        }
+                        
+                        if(lineaSecadoExpress.getSize() > 0){
+                            Thread.sleep((long) (3000 * milis));
+                            Vehiculo vehiculoTerminado = lineaSecadoExpress.eliminarVehiculo();
+                            System.out.println("Listo: " + vehiculoTerminado);
+                            registroVehiculos.append("Vehiculo secado Express: ").append(vehiculoTerminado.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                        }
+                        
+                        if(lineaAspirado1.getSize() > 0){
+                            if(lineaAspirado1.peek().getTamano().equals("Pequeno")){
+                                Thread.sleep((long) (5000 * milis));
+                                Vehiculo vehiculoTerminado2 = lineaAspirado1.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado2.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 1: ").append(vehiculoTerminado2.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                            } else if(lineaAspirado1.peek().getTamano().equals("Mediano")){
+                                Thread.sleep((long) (7000 * milis));
+                                Vehiculo vehiculoTerminado3 = lineaAspirado1.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado3.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 1: ").append(vehiculoTerminado3.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                            } else{
+                                Thread.sleep((long) (10000 * milis * 2));
+                                Vehiculo vehiculoTerminado4 = lineaAspirado1.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado4.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 1: ").append(vehiculoTerminado4.toString()).append(" Hora: ").append(formatearHora()).append("\n");
                             }
-                        } else{
-                            Thread.sleep(1000);
+                        }
+                        
+                        if(lineaAspirado2.getSize() > 0){
+                            if(lineaAspirado2.peek().getTamano().equals("Pequeno")){
+                                Thread.sleep((long) (5000 * milis));
+                                Vehiculo vehiculoTerminado2 = lineaAspirado2.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado2.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 2: ").append(vehiculoTerminado2.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                            } else if(lineaAspirado2.peek().getTamano().equals("Mediano")){
+                                Thread.sleep((long) (7000 * milis));
+                                Vehiculo vehiculoTerminado3 = lineaAspirado2.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado3.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 2: ").append(vehiculoTerminado3.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                            } else{
+                                Thread.sleep((long) (10000 * milis));
+                                Vehiculo vehiculoTerminado4 = lineaAspirado2.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado4.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 2: ").append(vehiculoTerminado4.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                            }
+                        }
+                        
+                        if(lineaAspirado3.getSize() > 0){
+                            if(lineaAspirado3.peek().getTamano().equals("Pequeno")){
+                                Thread.sleep((long) (5000 * milis));
+                                Vehiculo vehiculoTerminado2 = lineaAspirado3.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado2.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 3: ").append(vehiculoTerminado2.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                            } else if(lineaAspirado3.peek().getTamano().equals("Mediano")){
+                                Thread.sleep((long) (7000 * milis));
+                                Vehiculo vehiculoTerminado3 = lineaAspirado3.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado3.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 3: ").append(vehiculoTerminado3.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                            } else{
+                                Thread.sleep((long) (10000 * milis));
+                                Vehiculo vehiculoTerminado4 = lineaAspirado3.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado4.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 3: ").append(vehiculoTerminado4.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                            }
+                        }
+                        
+                        if(lineaAspirado4.getSize() > 0){
+                            if(lineaAspirado4.peek().getTamano().equals("Pequeno")){
+                                Thread.sleep((long) (5000 * milis));
+                                Vehiculo vehiculoTerminado2 = lineaAspirado4.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado2.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 4: ").append(vehiculoTerminado2.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                            } else if(lineaAspirado4.peek().getTamano().equals("Mediano")){
+                                Thread.sleep((long) (7000 * milis));
+                                Vehiculo vehiculoTerminado3 = lineaAspirado4.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado3.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 4: ").append(vehiculoTerminado3.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                            } else{
+                                Thread.sleep((long) (10000 * milis));
+                                Vehiculo vehiculoTerminado4 = lineaAspirado4.eliminarVehiculo();
+                                System.out.println("Listo: " + vehiculoTerminado4.toString());
+                                registroVehiculos.append("Vehiculo aspirado linea 4: ").append(vehiculoTerminado4.toString()).append(" Hora: ").append(formatearHora()).append("\n");
+                            }
                         }
                     }
                 } catch(InterruptedException e){
@@ -117,8 +192,8 @@ public class AutoLavado implements Runnable{
         
         Thread autoLavadoHilo = new Thread(() -> {
             try{
-                while(horas < 2){
-                    Thread.sleep(15000);
+                while(horas < 10){
+                    Thread.sleep((long) (15000 * milis));
                     horas += 15.0/60;
                     System.out.println("Horas transcurridas:" + horas);
                 }
@@ -137,6 +212,16 @@ public class AutoLavado implements Runnable{
         secadoHilo.start();
         
         autoLavadoHilo.start();
+    }
+    
+    public String formatearHora() {
+        int horasEnteras = (int) horas;  // Convertimos las horas a enteros
+        int minutosEnteros = (int) ((horas - horasEnteras) * 60);  // Calculamos los minutos restantes
+        return String.format("%02d:%02d", horasEnteras, minutosEnteros);  // Formateamos en HH:mm
+    }
+    
+    public String getRegistro(){
+        return registroVehiculos.toString();
     }
     
     public Vehiculo vehiculoRandom(){
@@ -178,7 +263,11 @@ public class AutoLavado implements Runnable{
         }
         
         return mejorCola;
-    } 
+    }
+    
+    public void setMilis(float milis){
+        this.milis = milis;
+    }
     
     public ColaVehiculo getAcceso(){
         return acceso;
@@ -194,5 +283,21 @@ public class AutoLavado implements Runnable{
     
     public float getHoras(){
         return horas;
+    }
+    
+    public ColaVehiculo getLineaAspirado1(){
+        return lineaAspirado1;
+    }
+    
+    public ColaVehiculo getLineaAspirado2(){
+        return lineaAspirado2;
+    }
+    
+    public ColaVehiculo getLineaAspirado3(){
+        return lineaAspirado3;
+    }
+    
+    public ColaVehiculo getLineaAspirado4(){
+        return lineaAspirado4;
     }
 }
