@@ -36,35 +36,47 @@ public class Interfaz extends javax.swing.JFrame {
         registroCarros = new StringBuilder();
     }
     
+    public void mostrarInformacion(String texto){
+        JDialog dialogo = new JDialog(this, "Registro carros", true);
+        JTextArea textArea = new JTextArea(20, 40);
+        textArea.setText(texto);
+        textArea.setEditable(false);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        dialogo.getContentPane().add(scrollPane);
+        dialogo.pack();
+        dialogo.setLocationRelativeTo(this); 
+        dialogo.setVisible(true);
+    }
+    
     public void reloj(){  
         relojTimer = new Timer(1000, e -> {
-            if (horaContador < 10) {
+            if(horaContador < 10){
                 minutos++;
-                if (minutos == 60) {
+                if(minutos == 60){
                     minutos = 0;
                     horaContador++;
                 }
                 actualizarAcceso();
-            } else {
+            } else{
                 relojTimer.stop(); 
                 System.out.println(x.getRegistro());
+                mostrarInformacion(x.getRegistro());
             }
         });
         relojTimer.start();
     }
     
-    
-    
-    public void actualizarAcceso() {
+    public void actualizarAcceso(){
          SwingUtilities.invokeLater(() -> {
-            if(x.getHoras() >= 1.75){
+            if(x.getHoras() >= 9.75){
                 horasRestantes.setVisible(true);
             } else{
                 horasRestantes.setVisible(false);
             }
             
             String tiempo = String.format("%02d:%02d", horaContador, minutos);
-            if (!hora.getText().equals(tiempo)) {
+            if(!hora.getText().equals(tiempo)){
                 hora.setText(tiempo);
             }
             
@@ -121,7 +133,7 @@ public class Interfaz extends javax.swing.JFrame {
             lavado1.setText("");
             lavado2.setText("");
             for(int j = 0; j < sizeLavado; j++){
-                switch (j) {
+                switch (j){
                     case 0: lavado0.setBackground(Color.GREEN); lavado0.setText(x.getMaquinaLavado().getVehiculo(0).getMarca()); break;
                     case 1: lavado1.setBackground(Color.GREEN); lavado1.setText(x.getMaquinaLavado().getVehiculo(1).getMarca()); break;
                     case 2: lavado2.setBackground(Color.GREEN); lavado2.setText(x.getMaquinaLavado().getVehiculo(2).getMarca()); break;
@@ -283,8 +295,6 @@ public class Interfaz extends javax.swing.JFrame {
                         break;
                 }
             }
-            
-            
         });
     }
     
@@ -785,10 +795,12 @@ public class Interfaz extends javax.swing.JFrame {
 
     private void adelantarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_adelantarActionPerformed
         x.setMilis((float) 0.3);
+        relojTimer.setDelay(300);
     }//GEN-LAST:event_adelantarActionPerformed
 
     private void saltarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saltarActionPerformed
         x.setMilis((float) 0.001);
+        relojTimer.setDelay(10);
     }//GEN-LAST:event_saltarActionPerformed
 
     /**
@@ -884,4 +896,3 @@ public class Interfaz extends javax.swing.JFrame {
     private StringBuilder registroCarros;
     private JTextArea textArea;
 }
-

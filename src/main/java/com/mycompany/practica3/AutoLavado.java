@@ -38,7 +38,7 @@ public class AutoLavado implements Runnable{
             Thread llegadaVehiculosHilo = new Thread(() -> {  
                 try{
                     while(true){
-                        if (Thread.currentThread().isInterrupted()) {
+                        if(Thread.currentThread().isInterrupted()){
                             System.out.println("Hilo interrumpido");
                             break;
                         }
@@ -52,7 +52,7 @@ public class AutoLavado implements Runnable{
                             }
                             Vehiculo vehiculoNuevo = vehiculoRandom();
                             acceso.agregarVehiculo(vehiculoNuevo);
-                            System.out.println("Vehiculo Nuevo:" + vehiculoNuevo.toString());
+                            System.out.println("Vehiculo nuevo:" + vehiculoNuevo.toString());
                         }
                     }
                 } catch(InterruptedException e){
@@ -63,12 +63,11 @@ public class AutoLavado implements Runnable{
             Thread lavadoHilo = new Thread(() -> {
                 try{
                     while(true){
-                        if (Thread.currentThread().isInterrupted()) {
+                        if(Thread.currentThread().isInterrupted()){
                             System.out.println("Hilo interrumpido");
                             break;
                         }
                         
-                        //No se quedan los carros en la cola de lavado los 3 segundos
                         if(!maquinaLavado.colaLlena() && !acceso.colaVacia()){
                             Vehiculo vehiculoAEliminar = acceso.eliminarVehiculo();
                             if(vehiculoAEliminar != null){
@@ -214,10 +213,10 @@ public class AutoLavado implements Runnable{
         autoLavadoHilo.start();
     }
     
-    public String formatearHora() {
-        int horasEnteras = (int) horas;  // Convertimos las horas a enteros
-        int minutosEnteros = (int) ((horas - horasEnteras) * 60);  // Calculamos los minutos restantes
-        return String.format("%02d:%02d", horasEnteras, minutosEnteros);  // Formateamos en HH:mm
+    public String formatearHora(){
+        int horasEnteras = (int) horas;  
+        int minutosEnteros = (int) ((horas - horasEnteras) * 60);  
+        return String.format("%02d:%02d", horasEnteras, minutosEnteros); 
     }
     
     public String getRegistro(){
